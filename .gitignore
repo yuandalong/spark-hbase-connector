@@ -19,5 +19,5 @@ project/project
 
 # Intellij
 .idea
-
+*.iml
 .DS_Store
