@@ -19,3 +19,5 @@ project/project
 
 # Intellij
 .idea
+
+.DS_Store
