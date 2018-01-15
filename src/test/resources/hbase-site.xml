@@ -4,4 +4,8 @@
 		<name>file.stream-buffer-size</name>
 		<value>8000</value>
 	</property>
+	<property>
+		<name>hbase.zookeeper.quorum</name>
+		<value>app-dev1-xyplus-a1</value>
+	</property>
 </configuration>

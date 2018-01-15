@@ -202,11 +202,15 @@ object CustomHBaseReadWriteJob {
         }
 
         // creating spark object
-        val spark = SparkSession.builder().appName(APP_NAME).getOrCreate()
+        val spark = SparkSession.builder()
+                .appName(APP_NAME)
+                .master("local[2]")
+                .getOrCreate()
         // using spark implicits implementation
         import spark.implicits._
         // Reading student-master table from HBase
-        val studentMasterDF = spark.sparkContext.hbaseTable[Student](HBASE_TABLE_STUDENT_MASTER.get).inColumnFamily(HBASE_TABLE_STUDENT_MASTER_DEFAULT_COLUMN_FAMILY.get)
+        val studentMasterDF = spark.sparkContext.hbaseTable[Student](HBASE_TABLE_STUDENT_MASTER.get)
+                .inColumnFamily(HBASE_TABLE_STUDENT_MASTER_DEFAULT_COLUMN_FAMILY.get)
                 .map(record => {
                     Student(
                         record.studentId,
@@ -283,10 +287,12 @@ object CustomHBaseReadWriteJob {
 
         // Doing Join Transformation to get data for ExamResult table, preparing dataset for ExamResult table
 
-        val examResultDF = studentMasterDF.join(broadcast(studentClassDF), studentMasterDF.col("classId") === studentClassDF.col("classId"), "inner").drop(studentClassDF.col("classId"))
+        val examResultDF = studentMasterDF
+                .join(broadcast(studentClassDF), studentMasterDF.col("classId") === studentClassDF.col("classId"), "inner").drop(studentClassDF.col("classId"))
                 .join(broadcast(semesterDF), studentMasterDF.col("semesterId") === semesterDF.col("semesterId"), "inner").drop(semesterDF.col("semesterId"))
                 .join(broadcast(subjectDF), studentMasterDF.col("semesterId") === subjectDF.col("semesterId"), "inner").drop(subjectDF.col("semesterId"))
-                .select("examId", "studentId", "classId", "subjectId", "subjectName", "marks", "grace")
+//                .select("examId", "studentId", "classId", "subjectId", "subjectName", "marks", "grace")
+                .select("studentId", "classId", "subjectId", "subjectName", "marks", "grace")
                 .groupBy("studentId").agg(sum("marks").as("gross_marks"), sum("grace").as("total_grace")).withColumn("total_marks", expr("gross_marks + total_grace"))
 
         // Iterating DataFrame and saving data to HBase table
