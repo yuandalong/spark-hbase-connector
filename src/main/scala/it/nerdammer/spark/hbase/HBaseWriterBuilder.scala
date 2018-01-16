@@ -91,7 +91,7 @@ class HBaseWriter[R: ClassTag](builder: HBaseWriterBuilder[R])(implicit mapper: 
           val family = if(name.contains(':')) Bytes.toBytes(name.substring(0, name.indexOf(':'))) else Bytes.toBytes(builder.columnFamily.get)
           val column = if(name.contains(':')) Bytes.toBytes(name.substring(name.indexOf(':') + 1)) else Bytes.toBytes(name)
 
-          put.add(family, column, value)
+          put.addColumn(family, column, value)
         }
         case _ => {}
       }
